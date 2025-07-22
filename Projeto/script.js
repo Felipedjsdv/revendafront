@@ -1,106 +1,88 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("loginForm");
-  const gerarBtn = document.getElementById("gerarTeste");
+const apiUrl = 'https://revenda.onrender.com';
 
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const telefone = document.getElementById("telefone").value.replace(/\D/g, "");
-      const senha = document.getElementById("senha").value;
+// LOGIN
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const telefone = document.getElementById('telefone').value;
+  const senha = document.getElementById('senha').value;
 
-      try {
-        const res = await fetch("http://localhost:3000/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ telefone, senha })
-        });
+  const res = await fetch(`${apiUrl}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, senha })
+  });
 
-        const json = await res.json();
-        if (json.sucesso) {
-          localStorage.setItem("usuario", telefone);
-          window.location.href = "painel.html";
-        } else {
-          alert("Login inválido.");
-        }
-      } catch (error) {
-        alert("Erro de conexão com servidor.");
-      }
-    });
-  }
+  const data = await res.json();
 
-  if (gerarBtn) {
-    const resposta = document.getElementById("resposta");
-    const envioBtns = document.getElementById("envioBtns");
-
-    gerarBtn.addEventListener("click", async () => {
-      const telefone = localStorage.getItem("usuario");
-      resposta.textContent = "Gerando teste...";
-
-      try {
-        const res = await fetch("http://localhost:3000/api/gerar-teste-api", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ telefone: telefone, minutos: 60 })
-        });
-
-        const json = await res.json();
-        if (json.sucesso) {
-          resposta.innerHTML = `<strong>Teste gerado:</strong> ${json.codigo}`;
-          localStorage.setItem("codigoTeste", json.codigo);
-          envioBtns.classList.remove("hidden");
-          carregarHistorico(telefone);
-        } else {
-          resposta.textContent = "Erro ao gerar teste.";
-        }
-      } catch (error) {
-        resposta.textContent = "Erro na conexão com o servidor.";
-      }
-    });
-
-    document.getElementById("enviarTelegram").addEventListener("click", async () => {
-      const chat_id = document.getElementById("chat_id").value;
-      const codigo = localStorage.getItem("codigoTeste");
-
-      const res = await fetch("http://localhost:3000/api/enviar-telegram", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id, codigo })
-      });
-
-      const json = await res.json();
-      alert(json.sucesso ? "Enviado via Telegram!" : "Erro no envio Telegram.");
-    });
-
-    document.getElementById("enviarWhatsApp").addEventListener("click", async () => {
-      const telefone = document.getElementById("telefoneZap").value;
-      const codigo = localStorage.getItem("codigoTeste");
-
-      const res = await fetch("http://localhost:3000/api/enviar-whatsapp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone, codigo })
-      });
-
-      const json = await res.json();
-      alert(json.sucesso ? "Enviado via WhatsApp!" : "Erro no envio WhatsApp.");
-    });
-
-    const user = localStorage.getItem("usuario");
-    document.getElementById("dadosUsuario").textContent = "Usuário: " + user;
-
-    carregarHistorico(user);
+  if (res.ok && data.success) {
+    localStorage.setItem('user', JSON.stringify(data.user));
+    window.location.href = 'painel.html';
+  } else {
+    alert('Telefone ou senha inválidos.');
   }
 });
 
-async function carregarHistorico(telefone) {
-  const lista = document.getElementById("historico");
-  try {
-    const res = await fetch(`http://localhost:3000/api/testes/${telefone}`);
-    const json = await res.json();
-    if (Array.isArray(json)) {
-      lista.innerHTML = json.map(item => `<li>🧪 ${item.codigo} - ${item.criado_em}</li>`).join("");
-    }
-  } catch {
-    lista.innerHTML = "<li>Erro ao carregar histórico</li>";
+// VERIFICAR LOGIN NO PAINEL
+function verificarLogin() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) {
+    alert('Faça login para acessar o painel.');
+    window.location.href = 'index.html';
+  }
+  return user;
+}
+
+// BOTÃO LOGOUT
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  localStorage.removeItem('user');
+  window.location.href = 'index.html';
+});
+
+// GERAR TESTE
+document.getElementById('gerarTeste')?.addEventListener('click', async () => {
+  const user = verificarLogin();
+  const tempo = document.getElementById('tempo')?.value || '60';
+  const metodo = document.querySelector('input[name="metodo"]:checked')?.value || 'whatsapp';
+
+  const res = await fetch(`${apiUrl}/gerar-teste`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      telefone: user.telefone,
+      minutos: tempo,
+      metodo
+    })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    alert('Teste gerado com sucesso!');
+    carregarHistorico();
+  } else {
+    alert('Erro ao gerar teste.');
+  }
+});
+
+// CARREGAR HISTÓRICO
+async function carregarHistorico() {
+  const user = verificarLogin();
+  const res = await fetch(`${apiUrl}/historico/${user.telefone}`);
+  const historico = await res.json();
+  const lista = document.getElementById('historico');
+  if (lista) {
+    lista.innerHTML = '';
+    historico.forEach((item) => {
+      const li = document.createElement('li');
+      li.textContent = `Teste para ${item.metodo.toUpperCase()} - ${item.minutos} min`;
+      lista.appendChild(li);
+    });
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.pathname.includes('painel.html')) {
+    verificarLogin();
+    carregarHistorico();
+  }
+});
