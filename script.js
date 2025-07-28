@@ -32,3 +32,50 @@ function capitalize(str) {
 function logout() {
   alert("Você foi deslogado!");
 }
+
+let clientes = JSON.parse(localStorage.getItem("clientes") || "[]");
+
+function salvarCliente(e) {
+  e.preventDefault();
+  const form = e.target;
+  const cliente = {
+    nome: form.nome.value,
+    email: form.email.value,
+    whatsapp: form.whatsapp.value,
+    vencimento: form.vencimento.value,
+    plano: form.plano.value
+  };
+  clientes.push(cliente);
+  localStorage.setItem("clientes", JSON.stringify(clientes));
+  form.reset();
+  renderClientes();
+}
+
+function renderClientes() {
+  const tbody = document.getElementById("listaClientes");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  clientes.forEach((c, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${c.nome}</td>
+      <td>${c.email}</td>
+      <td>${c.whatsapp}</td>
+      <td>${c.vencimento}</td>
+      <td>${c.plano}</td>
+      <td>
+        <button onclick="excluirCliente(${i})">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function excluirCliente(index) {
+  if (confirm("Deseja excluir este cliente?")) {
+    clientes.splice(index, 1);
+    localStorage.setItem("clientes", JSON.stringify(clientes));
+    renderClientes();
+  }
+}
