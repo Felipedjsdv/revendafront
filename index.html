@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestor Rocket</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">🚀 Gestor</div>
+      <nav>
+        <ul>
+          <li class="active" onclick="navigate('dashboard')">📊 Dashboard</li>
+          <li onclick="navigate('clientes')">👥 Clientes</li>
+          <li onclick="navigate('financeiro')">💰 Financeiro</li>
+          <li onclick="navigate('config')">⚙️ Configurações</li>
+        </ul>
+      </nav>
+      <button class="logout" onclick="logout()">🚪 Sair</button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+      <header>
+        <h1 id="page-title">Dashboard</h1>
+      </header>
+
+      <section id="content">
+        <p>Bem-vindo ao Gestor Rocket!</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
