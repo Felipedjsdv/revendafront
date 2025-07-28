@@ -70,3 +70,44 @@ header h1 {
   font-size: 28px;
   margin-bottom: 10px;
 }
+
+form.form {
+  display: grid;
+  gap: 10px;
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+
+form input, form button {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+form button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #1d4ed8;
+}
+
+table.tabela-clientes {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table.tabela-clientes th,
+table.tabela-clientes td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+table.tabela-clientes th {
+  background-color: #f3f4f6;
+}
